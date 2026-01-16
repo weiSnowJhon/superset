@@ -136,3 +136,10 @@ try:
     )
 except ImportError:
     logger.info("Using default Docker config...")
+
+# 启用翻译功能
+BABEL_DEFAULT_LOCALE = "zh"
+LANGUAGES = {
+    "en": {"flag": "us", "name": "English"},
+    "zh": {"flag": "cn", "name": "Chinese"},
+}

@@ -83,6 +83,9 @@ import { FilterPlugins } from 'src/constants';
 import AgGridTableChartPlugin from '@superset-ui/plugin-chart-ag-grid-table';
 import TimeTableChartPlugin from '../TimeTable';
 
+import { ZzAnalysisPluginChartEcharts } from 'zz-analysis-plugin-chart-echarts';
+
+
 export default class MainPreset extends Preset {
   constructor() {
     const experimentalPlugins = isFeatureEnabled(
@@ -193,6 +196,7 @@ export default class MainPreset extends Preset {
         }).configure({ key: VizType.Cartodiagram }),
         ...experimentalPlugins,
         ...agGridTablePlugin,
+        new ZzAnalysisPluginChartEcharts().configure({ key: 'ext-course-number-card' }),
       ],
     });
   }
