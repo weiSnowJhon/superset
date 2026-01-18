@@ -30,6 +30,9 @@ import {
   subtitleControl,
   showMetricNameControl,
   metricNameFontSizeWithVisibility,
+  titleControl,
+  titleFontSize,
+  showSevenDayAvgControl,
 } from '../sharedControls';
 
 export default {
@@ -43,11 +46,14 @@ export default {
       label: t('Chart Options'),
       expanded: true,
       controlSetRows: [
+        [titleControl],
+        [titleFontSize],
         [headerFontSize],
         [subtitleControl],
         [subtitleFontSize],
         [showMetricNameControl],
         [metricNameFontSizeWithVisibility],
+        [showSevenDayAvgControl],
         ['y_axis_format'],
         ['currency_format'],
         [

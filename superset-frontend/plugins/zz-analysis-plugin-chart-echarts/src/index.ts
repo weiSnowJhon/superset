@@ -18,7 +18,8 @@
  */
 
 export {
-  CardCompareNumber,
+  CardCompareNumberPlugin,
+  CardCourseNumberPlugin,
 } from './CardBigNumber';
 
 

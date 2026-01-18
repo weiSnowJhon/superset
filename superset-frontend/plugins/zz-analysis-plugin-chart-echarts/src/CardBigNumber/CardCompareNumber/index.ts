@@ -20,38 +20,37 @@ import { t, Behavior } from '@superset-ui/core';
 import controlPanel from './controlPanel';
 import transformProps from './transformProps';
 import buildQuery from './buildQuery';
-import example1 from './images/CardCompareNumber.png';
-import example2 from './images/CardCompareNumber.png';
+import example from './images/Big_Number_Trendline.jpg';
 import thumbnail from './images/thumbnail.png';
-import { BigNumberTotalChartProps, BigNumberTotalFormData } from '../types';
+import {
+  BigNumberWithTrendlineChartProps,
+  BigNumberWithTrendlineFormData,
+} from '../types';
 import { EchartsChartPlugin } from '../../types';
 
 const metadata = {
-  category: t('KPI'),
+  category: t('业务'),
   description: t(
-    '展示日期和上期值的对比，及近期的均值情况，适用于关键指标的展示',
+    'Showcases a single number accompanied by a simple line chart, to call attention to an important metric along with its change over time or other dimension.',
   ),
-  exampleGallery: [
-    { url: example1, caption: t('A Big Number') },
-    { url: example2, caption: t('With a subheader') },
-  ],
-  name: t('NumberCompare2Avg'),
+  exampleGallery: [{ url: example }],
+  name: t('Z Big Number with Trendline'),
   tags: [
-    t('Additive'),
-    t('Business'),
+    t('Advanced-Analytics'),
     t('ECharts'),
-    t('Legacy'),
+    t('Line'),
     t('Percentages'),
     t('Featured'),
     t('Report'),
+    t('Trend'),
   ],
   thumbnail,
   behaviors: [Behavior.DrillToDetail],
 };
 
-export default class BigNumberTotalChartPlugin extends EchartsChartPlugin<
-  BigNumberTotalFormData,
-  BigNumberTotalChartProps
+export default class BigNumberWithTrendlineChartPlugin extends EchartsChartPlugin<
+  BigNumberWithTrendlineFormData,
+  BigNumberWithTrendlineChartProps
 > {
   constructor() {
     super({

@@ -102,4 +102,8 @@ export type BigNumberVizProps = {
   formData?: BigNumberWithTrendlineFormData;
   refs: Refs;
   colorThresholdFormatters?: ColorFormatters;
+  avgValue?: number | null;
+  avgSubheader?: string;
+  percentChange?: number;
+  compareSuffix?: string;
 };

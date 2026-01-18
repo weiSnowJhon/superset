@@ -166,7 +166,8 @@ export default function EchartsTimeseries({
 
   const eventHandlers: EventHandlers = {
     click: props => {
-      if (!hasDimensions) {
+      // 逻辑修改：如果有维度，走原有逻辑；如果没有维度但有 X 轴，走我们的自定义逻辑
+      if (!hasDimensions && !xAxis.label) {
         return;
       }
       if (clickTimer.current) {
@@ -174,8 +175,36 @@ export default function EchartsTimeseries({
       }
       // Ensure that double-click events do not trigger single click event. So we put it in the timer.
       clickTimer.current = setTimeout(() => {
-        const { seriesName: name } = props;
-        handleChange(name);
+        const { seriesName, name: xAxisValue } = props;
+
+        if (hasDimensions) {
+          // 原有逻辑：按维度过滤
+          handleChange(seriesName);
+        } else {
+          // 自定义逻辑：按 X 轴过滤 (解决你提到的 category 场景)
+          const xField = xAxis.label; // 获取 X 轴字段名
+          
+          const dataMask = {
+            extraFormData: {
+              filters: [
+                {
+                  col: xField,
+                  op: 'IN' as const,
+                  val: [xAxisValue],
+                },
+              ],
+            },
+            filterState: {
+              label: [xAxisValue],
+              value: [xAxisValue],
+              selectedValues: [xAxisValue],
+            },
+          };
+          
+          // 发出通知
+          console.log("自定义修改发出通知:",dataMask)
+          setDataMask(dataMask);
+        }
       }, TIMER_DURATION);
     },
     mouseout: () => {

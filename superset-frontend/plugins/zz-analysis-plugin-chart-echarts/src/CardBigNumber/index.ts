@@ -17,7 +17,8 @@
  * under the License.
  */
 // eslint-disable-next-line import/prefer-default-export
-export { default as CardCompareNumber } from './CardCompareNumber';
+export { default as CardCompareNumberPlugin } from './CardCompareNumber';
+export { default as CardCourseNumberPlugin } from './CardCourseNumber';
 
 /**
  * Note: this file exports the default export from ZzAnalysisPluginChartEcharts.tsx.

@@ -16,8 +16,60 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { buildQueryContext, QueryFormData } from '@superset-ui/core';
+
+import {
+  buildQueryContext,
+  ensureIsArray,
+  getXAxisColumn,
+  isXAxisSet,
+  QueryFormData,
+} from '@superset-ui/core';
+import {
+  aggregationOperator,
+  flattenOperator,
+  pivotOperator,
+  resampleOperator,
+  rollingWindowOperator,
+} from '@superset-ui/chart-controls';
 
 export default function buildQuery(formData: QueryFormData) {
-  return buildQueryContext(formData, baseQueryObject => [baseQueryObject]);
+  const isRawMetric = formData.aggregation === 'raw';
+
+  const timeColumn = isXAxisSet(formData)
+    ? ensureIsArray(getXAxisColumn(formData))
+    : [];
+
+  return buildQueryContext(formData, baseQueryObject => {
+    const queries = [
+      {
+        ...baseQueryObject,
+        columns: [...timeColumn],
+        ...(timeColumn.length ? {} : { is_timeseries: true }),
+        post_processing: [
+          pivotOperator(formData, baseQueryObject),
+          rollingWindowOperator(formData, baseQueryObject),
+          resampleOperator(formData, baseQueryObject),
+          flattenOperator(formData, baseQueryObject),
+        ].filter(Boolean),
+      },
+    ];
+
+    // Only add second query for raw metrics which need different query structure
+    // All other aggregations (sum, mean, min, max, median, LAST_VALUE) can be computed client-side from trendline data
+    if (formData.aggregation === 'raw') {
+      queries.push({
+        ...baseQueryObject,
+        columns: [...(isRawMetric ? [] : timeColumn)],
+        is_timeseries: !isRawMetric,
+        post_processing: isRawMetric
+          ? []
+          : ([
+              pivotOperator(formData, baseQueryObject),
+              aggregationOperator(formData, baseQueryObject),
+            ].filter(Boolean) as any[]),
+      });
+    }
+
+    return queries;
+  });
 }

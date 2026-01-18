@@ -72,6 +72,7 @@ import {
 } from '@superset-ui/plugin-chart-echarts';
 import {
   SelectFilterPlugin,
+  ButtonFilterPlugin,
   RangeFilterPlugin,
   TimeFilterPlugin,
   TimeColumnFilterPlugin,
@@ -83,7 +84,7 @@ import { FilterPlugins } from 'src/constants';
 import AgGridTableChartPlugin from '@superset-ui/plugin-chart-ag-grid-table';
 import TimeTableChartPlugin from '../TimeTable';
 
-import { ZzAnalysisPluginChartEcharts } from 'zz-analysis-plugin-chart-echarts';
+import { CardCompareNumberPlugin, CardCourseNumberPlugin } from 'zz-analysis-plugin-chart-echarts';
 
 
 export default class MainPreset extends Preset {
@@ -169,6 +170,7 @@ export default class MainPreset extends Preset {
         new EchartsHeatmapChartPlugin().configure({ key: VizType.Heatmap }),
         new EchartsHistogramChartPlugin().configure({ key: VizType.Histogram }),
         new SelectFilterPlugin().configure({ key: FilterPlugins.Select }),
+        new ButtonFilterPlugin().configure({ key: FilterPlugins.Button }),
         new RangeFilterPlugin().configure({ key: FilterPlugins.Range }),
         new TimeFilterPlugin().configure({ key: FilterPlugins.Time }),
         new TimeColumnFilterPlugin().configure({
@@ -196,7 +198,8 @@ export default class MainPreset extends Preset {
         }).configure({ key: VizType.Cartodiagram }),
         ...experimentalPlugins,
         ...agGridTablePlugin,
-        new ZzAnalysisPluginChartEcharts().configure({ key: 'ext-course-number-card' }),
+        new CardCompareNumberPlugin().configure({ key: 'ext_card_compare_number' }),
+        new CardCourseNumberPlugin().configure({ key: 'ext_card_course_number' }),
       ],
     });
   }

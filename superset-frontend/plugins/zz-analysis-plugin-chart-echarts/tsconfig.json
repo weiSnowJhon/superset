@@ -6,7 +6,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": false,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "lib": [
       "dom",
       "esnext"
@@ -35,10 +35,25 @@
   },
   "exclude": [
     "lib",
-    "test"
+    "test",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "../../packages/**/test/**",
+    "../../packages/**/*.test.ts",
+    "../../packages/**/*.test.tsx",
+    "../../spec/**/*"
   ],
   "include": [
     "src/**/*",
-    "types/**/*"
-  ]
+    "types/**/*",
+    "../../types/**/*"
+  ],
+  "references": [
+  {
+    "path": "../../packages/superset-ui-chart-controls"
+  },
+  {
+    "path": "../../packages/superset-ui-core"
+  }
+]
 }

@@ -16,21 +16,59 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 import { GenericDataType } from '@superset-ui/core';
-import { getColorFormatters } from '@superset-ui/chart-controls';
-import { BigNumberTotalChartProps } from '../types';
 import transformProps from './transformProps';
+import { BigNumberWithTrendlineChartProps, BigNumberDatum } from '../types';
 
+// Mock chart-controls to avoid styled-components issues in Jest
 jest.mock('@superset-ui/chart-controls', () => ({
-  getColorFormatters: jest.fn(),
+  aggregationChoices: {
+    raw: {
+      label: 'Force server-side aggregation',
+      compute: (data: number[]) => data[0] ?? null,
+    },
+    LAST_VALUE: {
+      label: 'Last Value',
+      compute: (data: number[]) => data[0] ?? null,
+    },
+    sum: {
+      label: 'Total (Sum)',
+      compute: (data: number[]) => data.reduce((a, b) => a + b, 0),
+    },
+    mean: {
+      label: 'Average (Mean)',
+      compute: (data: number[]) =>
+        data.reduce((a, b) => a + b, 0) / data.length,
+    },
+    min: { label: 'Minimum', compute: (data: number[]) => Math.min(...data) },
+    max: { label: 'Maximum', compute: (data: number[]) => Math.max(...data) },
+    median: {
+      label: 'Median',
+      compute: (data: number[]) => {
+        const sorted = [...data].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 === 0
+          ? (sorted[mid - 1] + sorted[mid]) / 2
+          : sorted[mid];
+      },
+    },
+  },
 }));
 
 jest.mock('@superset-ui/core', () => ({
   GenericDataType: { Temporal: 2, String: 1 },
-  getMetricLabel: jest.fn(metric => metric),
   extractTimegrain: jest.fn(() => 'P1D'),
-  getValueFormatter: jest.fn(() => (v: any) => `$${v}`),
+  getMetricLabel: jest.fn(metric => metric),
+  getXAxisLabel: jest.fn(() => '__timestamp'),
+  getValueFormatter: jest.fn(() => ({
+    format: (v: number) => `$${v}`,
+  })),
+  getNumberFormatter: jest.fn(() => (v: number) => `${(v * 100).toFixed(1)}%`),
+  t: jest.fn(v => v),
+  tooltipHtml: jest.fn(() => '<div>tooltip</div>'),
+  NumberFormats: {
+    PERCENT_SIGNED_1_POINT: '.1%',
+  },
 }));
 
 jest.mock('../utils', () => ({
@@ -42,17 +80,23 @@ jest.mock('../utils', () => ({
   }),
 }));
 
-describe('BigNumberTotal transformProps', () => {
+jest.mock('../../utils/tooltip', () => ({
+  getDefaultTooltip: jest.fn(() => ({})),
+}));
+
+describe('BigNumberWithTrendline transformProps', () => {
   const onContextMenu = jest.fn();
   const baseFormData = {
     headerFontSize: 20,
     metric: 'value',
-    subheader: 'sub header text',
-    subheaderFontSize: 14,
+    subtitle: 'subtitle message',
+    subtitleFontSize: 14,
     forceTimestampFormatting: false,
     timeFormat: 'YYYY-MM-DD',
     yAxisFormat: 'SMART_NUMBER',
-    conditionalFormatting: [{ color: 'red', op: '>', value: 0 }],
+    compareLag: 1,
+    compareSuffix: 'WoW',
+    colorPicker: { r: 0, g: 0, b: 0 },
     currencyFormat: { symbol: '$', symbolPosition: 'prefix' },
   };
 
@@ -63,194 +107,163 @@ describe('BigNumberTotal transformProps', () => {
   };
 
   const baseHooks = { onContextMenu };
-
   const baseRawFormData = { dummy: 'raw' };
 
   it('should return null bigNumber when no data is provided', () => {
     const chartProps = {
       width: 400,
       height: 300,
-      queriesData: [{ data: [], coltypes: [] }],
+      queriesData: [{ data: [] as unknown as BigNumberDatum[], coltypes: [] }],
       formData: baseFormData,
       rawFormData: baseRawFormData,
       hooks: baseHooks,
       datasource: baseDatasource,
+      theme: { colors: { grayscale: { light5: '#eee' } } },
     };
 
     const result = transformProps(
-      chartProps as unknown as BigNumberTotalChartProps,
+      chartProps as unknown as BigNumberWithTrendlineChartProps,
     );
     expect(result.bigNumber).toBeNull();
-    expect(result.width).toBe(400);
-    expect(result.height).toBe(300);
-    expect(result.subtitle).toBe(baseFormData.subheader);
-    expect(result.onContextMenu).toBe(onContextMenu);
-    expect(result.refs).toEqual({});
-    // headerFormatter should be set even if there's no data
-    expect(typeof result.headerFormatter).toBe('function');
-    // colorThresholdFormatters fallback to empty array when getColorFormatters returns falsy
-    expect(result.colorThresholdFormatters).toEqual([]);
-  });
-  it('should convert subheader to subtitle', () => {
-    const chartProps = {
-      width: 400,
-      height: 300,
-      queriesData: [{ data: [], coltypes: [] }],
-      formData: { ...baseFormData, subheader: 'test' },
-      rawFormData: baseRawFormData,
-      hooks: baseHooks,
-      datasource: baseDatasource,
-    };
-    const result = transformProps(
-      chartProps as unknown as BigNumberTotalChartProps,
-    );
-    expect(result.subtitle).toBe('test');
+    expect(result.subtitle).toBe('subtitle message');
   });
 
-  const baseChartProps = {
-    width: 400,
-    height: 300,
-    queriesData: [{ data: [], coltypes: [] }],
-    rawFormData: { dummy: 'raw' },
-    hooks: { onContextMenu: jest.fn() },
-    datasource: {
-      currencyFormats: { value: '$0,0.00' },
-      columnFormats: { value: '$0,0.00' },
-      metrics: [{ metric_name: 'value', d3format: '.2f' }],
-    },
-  };
-
-  it('uses subtitle font size when subtitle is provided', () => {
-    const result = transformProps({
-      ...baseChartProps,
-      formData: {
-        subtitle: 'Subtitle wins',
-        subheader: 'Fallback subheader',
-        subtitleFontSize: 0.4,
-        subheaderFontSize: 0.99,
-        metric: 'value',
-        headerFontSize: 0.3,
-        yAxisFormat: 'SMART_NUMBER',
-        timeFormat: 'smart_date',
-      },
-    } as unknown as BigNumberTotalChartProps);
-
-    expect(result.subtitle).toBe('Subtitle wins');
-    expect(result.subtitleFontSize).toBe(0.4);
-  });
-
-  it('should compute bigNumber using parseMetricValue when data exists', () => {
+  it('should calculate subheader as percent change with suffix', () => {
     const chartProps = {
       width: 500,
       height: 400,
       queriesData: [
-        { data: [{ value: '456' }], coltypes: [GenericDataType.String] },
-      ],
-      formData: { ...baseFormData, forceTimestampFormatting: false },
-      rawFormData: baseRawFormData,
-      hooks: baseHooks,
-      datasource: baseDatasource,
-      sortBy: 'value',
-    };
-
-    const result = transformProps(
-      chartProps as unknown as BigNumberTotalChartProps,
-    );
-    // parseMetricValue converts '456' to number 456 by our mock
-    expect(result.bigNumber).toEqual(456);
-  });
-
-  it('should use formatTime as headerFormatter for Temporal or String types or forced formatting', () => {
-    // Case 1: Temporal type
-    const chartPropsTemporal = {
-      width: 600,
-      height: 450,
-      queriesData: [
-        { data: [{ value: '789' }], coltypes: [GenericDataType.Temporal] },
-      ],
-      formData: { ...baseFormData, forceTimestampFormatting: false },
-      rawFormData: baseRawFormData,
-      hooks: baseHooks,
-      datasource: baseDatasource,
-    };
-
-    const resultTemporal = transformProps(
-      chartPropsTemporal as unknown as BigNumberTotalChartProps,
-    );
-    expect(resultTemporal.headerFormatter(5)).toBe('5pm');
-
-    // Case 2: String type regardless of forcing formatting
-    const chartPropsString = {
-      width: 600,
-      height: 450,
-      queriesData: [
-        { data: [{ value: '789' }], coltypes: [GenericDataType.String] },
-      ],
-      formData: { ...baseFormData, forceTimestampFormatting: false },
-      rawFormData: baseRawFormData,
-      hooks: baseHooks,
-      datasource: baseDatasource,
-    };
-
-    const resultString = transformProps(
-      chartPropsString as unknown as BigNumberTotalChartProps,
-    );
-    expect(resultString.headerFormatter(5)).toBe('5pm');
-
-    // Case 3: Forced timestamp formatting
-    const chartPropsForced = {
-      width: 600,
-      height: 450,
-      queriesData: [{ data: [{ value: '789' }], coltypes: [0] }], // non-temporal/non-string
-      formData: { ...baseFormData, forceTimestampFormatting: true },
-      rawFormData: baseRawFormData,
-      hooks: baseHooks,
-      datasource: baseDatasource,
-    };
-
-    const resultForced = transformProps(
-      chartPropsForced as unknown as BigNumberTotalChartProps,
-    );
-    expect(resultForced.headerFormatter(5)).toBe('5pm');
-  });
-
-  it('should use numberFormatter as headerFormatter when not Temporal/String and no forced formatting', () => {
-    const chartProps = {
-      width: 700,
-      height: 500,
-      queriesData: [{ data: [{ value: '321' }], coltypes: [0] }], // non-temporal/non-string
-      formData: { ...baseFormData, forceTimestampFormatting: false },
-      rawFormData: baseRawFormData,
-      hooks: baseHooks,
-      datasource: baseDatasource,
-    };
-
-    const result = transformProps(
-      chartProps as unknown as BigNumberTotalChartProps,
-    );
-    expect(result.headerFormatter(500)).toBe('$500');
-  });
-
-  it('should propagate colorThresholdFormatters from getColorFormatters', () => {
-    // Override the getColorFormatters mock to return specific value
-    const mockFormatters = [{ formatter: 'red' }];
-    (getColorFormatters as jest.Mock).mockReturnValueOnce(mockFormatters);
-
-    const chartProps = {
-      width: 800,
-      height: 600,
-      queriesData: [
-        { data: [{ value: '100' }], coltypes: [GenericDataType.Temporal] },
+        {
+          data: [
+            { __timestamp: 2, value: 110 },
+            { __timestamp: 1, value: 100 },
+          ] as unknown as BigNumberDatum[],
+          colnames: ['__timestamp', 'value'],
+          coltypes: ['TEMPORAL', 'NUMERIC'],
+        },
       ],
       formData: baseFormData,
       rawFormData: baseRawFormData,
       hooks: baseHooks,
       datasource: baseDatasource,
+      theme: { colors: { grayscale: { light5: '#eee' } } },
     };
 
     const result = transformProps(
-      chartProps as unknown as BigNumberTotalChartProps,
+      chartProps as unknown as BigNumberWithTrendlineChartProps,
     );
-    expect(result.colorThresholdFormatters).toEqual(mockFormatters);
+    expect(result.subheader).toBe('10.0% WoW');
+  });
+
+  it('should compute bigNumber from parseMetricValue', () => {
+    const chartProps = {
+      width: 600,
+      height: 450,
+      queriesData: [
+        {
+          data: [
+            { __timestamp: 2, value: '456' },
+          ] as unknown as BigNumberDatum[],
+          colnames: ['__timestamp', 'value'],
+          coltypes: [GenericDataType.Temporal, GenericDataType.String],
+        },
+      ],
+      formData: baseFormData,
+      rawFormData: baseRawFormData,
+      hooks: baseHooks,
+      datasource: baseDatasource,
+      theme: { colors: { grayscale: { light5: '#eee' } } },
+    };
+
+    const result = transformProps(
+      chartProps as unknown as BigNumberWithTrendlineChartProps,
+    );
+    expect(result.bigNumber).toEqual(456);
+  });
+
+  it('should use formatTime as headerFormatter for Temporal/String or forced', () => {
+    const formData = { ...baseFormData, forceTimestampFormatting: true };
+    const chartProps = {
+      width: 600,
+      height: 450,
+      queriesData: [
+        {
+          data: [
+            { __timestamp: 2, value: '123' },
+          ] as unknown as BigNumberDatum[],
+          colnames: ['__timestamp', 'value'],
+          coltypes: [0, GenericDataType.String],
+        },
+      ],
+      formData,
+      rawFormData: baseRawFormData,
+      hooks: baseHooks,
+      datasource: baseDatasource,
+      theme: { colors: { grayscale: { light5: '#eee' } } },
+    };
+
+    const result = transformProps(
+      chartProps as unknown as BigNumberWithTrendlineChartProps,
+    );
+    expect(result.headerFormatter(5)).toBe('5pm');
+  });
+
+  it('should use numberFormatter when not Temporal/String and not forced', () => {
+    const formData = { ...baseFormData, forceTimestampFormatting: false };
+    const chartProps = {
+      width: 600,
+      height: 450,
+      queriesData: [
+        {
+          data: [{ __timestamp: 2, value: 500 }] as unknown as BigNumberDatum[],
+          colnames: ['__timestamp', 'value'],
+          coltypes: [0, 0],
+        },
+      ],
+      formData,
+      rawFormData: baseRawFormData,
+      hooks: baseHooks,
+      datasource: baseDatasource,
+      theme: { colors: { grayscale: { light5: '#eee' } } },
+    };
+
+    const result = transformProps(
+      chartProps as unknown as BigNumberWithTrendlineChartProps,
+    );
+    expect(result.headerFormatter.format(500)).toBe('$500');
+  });
+
+  it('should use last data point for comparison when big number comes from aggregated data', () => {
+    const chartProps = {
+      width: 500,
+      height: 400,
+      queriesData: [
+        {
+          data: [
+            { __timestamp: 3, value: 150 },
+            { __timestamp: 2, value: 100 },
+            { __timestamp: 1, value: 110 },
+          ] as unknown as BigNumberDatum[],
+          colnames: ['__timestamp', 'value'],
+          coltypes: ['TEMPORAL', 'NUMERIC'],
+        },
+        {
+          data: [{ value: 360 }],
+          colnames: ['value'],
+          coltypes: ['NUMERIC'],
+        },
+      ],
+      formData: { ...baseFormData, aggregation: 'sum' },
+      rawFormData: baseRawFormData,
+      hooks: baseHooks,
+      datasource: baseDatasource,
+      theme: { colors: { grayscale: { light5: '#eee' } } },
+    };
+
+    const result = transformProps(
+      chartProps as unknown as BigNumberWithTrendlineChartProps,
+    );
+    expect(result.bigNumber).toBe(360);
+    expect(result.subheader).toBe('50.0% WoW');
   });
 });
