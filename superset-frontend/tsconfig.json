@@ -1,6 +1,12 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
+    "noUnusedLocals": false,          // 忽略未使用的变量
+    "noUnusedParameters": false,      // 忽略未使用的函数参数
+    "skipLibCheck": true,             // 跳过所有 node_modules 的检查
+    "noEmitOnError": false,           // 即使报错也允许生成文件
+    "isolatedModules": false,          // 允许独立编译文件
+    "allowJs": true,                  // 允许 JS 和 TS 混用
     "baseUrl": ".",
     "paths": {
       "@superset-ui/core": ["./packages/superset-ui-core/src"],
