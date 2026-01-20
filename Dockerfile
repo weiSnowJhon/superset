@@ -68,11 +68,20 @@ RUN apt-get update && \
 #    ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 mssql-tools18 && \
 #    rm -rf /var/lib/apt/lists/*
 
+# === 诊断开始：确认虚拟环境状态 ===
+RUN echo "--- Environment Diagnosis ---" && \
+    ls -lad /app/.venv && \
+    ls -la /app/.venv/bin/pip || echo "Pip not found in bin" && \
+    /usr/bin/python3 -m venv --help > /dev/null && echo "Venv module available" && \
+    echo "--- End Diagnosis ---"
+
 # 4. 安装 Python 驱动到正确的虚拟环境 (/app/.venv)
 # 保留 mysqlclient, clickhouse-connect
 # 增加 pyodbc (配合 msodbcsql18) 和 pymssql (兼容旧版 SQL Server)
 # 去除 pyhive, thrift 等
-RUN pip install --no-cache-dir --upgrade \
+# === 尝试安装驱动 ===
+# 使用 python -m pip 是最稳妥的，能自动处理 bin 路径下的解释器关联
+RUN /app/.venv/bin/python3 -m pip install --no-cache-dir --upgrade \
     mysqlclient \
     clickhouse-connect \
     pymssql
