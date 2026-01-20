@@ -55,10 +55,9 @@ RUN apt-get update && \
 # 保留 mysqlclient, clickhouse-connect
 # 增加 pyodbc (配合 msodbcsql18) 和 pymssql (兼容旧版 SQL Server)
 # 去除 pyhive, thrift 等
-RUN /app/.venv/bin/pip install --no-cache-dir --upgrade \
+RUN pip install --no-cache-dir --upgrade \
     mysqlclient \
     clickhouse-connect \
-#    pyodbc \
     pymssql
 
 # 5. 权限处理（核心修改）
