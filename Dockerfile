@@ -13,6 +13,10 @@ RUN apt-get update -o Acquire::Retries=3 && \
 WORKDIR /app/superset-frontend
 COPY superset-frontend/package*.json ./
 
+# 2. 【关键】必须在 npm ci 之前，把插件目录也拷贝进去！
+# 假设 plugins 文件夹在 superset-frontend 目录下
+COPY superset-frontend/plugins/ ./plugins/
+
 # 1. 修改 npm 源为私有仓库
 RUN npm ci
 
