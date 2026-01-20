@@ -84,9 +84,7 @@ RUN chown -R superset:superset /app/.venv /app/pythonpath
 # 6. 拷贝前端静态产物
 COPY --from=frontend-builder /app/superset/static/assets /app/superset/static/assets
 
-# 设置环境变量，确保系统优先使用虚拟环境中的二进制文件
-ENV PATH="/app/.venv/bin:$PATH"
-ENV PYTHONPATH="/app/pythonpath:/app/.venv/lib/python3.10/site-packages"
+ENV PYTHONPATH="/app/pythonpath:/usr/local/lib/python3.10/site-packages"
 
 USER superset
 
