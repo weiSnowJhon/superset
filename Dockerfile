@@ -68,32 +68,29 @@ RUN apt-get update && \
 #    ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql18 mssql-tools18 && \
 #    rm -rf /var/lib/apt/lists/*
 
-# === 诊断开始：确认虚拟环境状态 ===
-RUN echo "--- Environment Diagnosis ---" && \
-    ls -lad /app/.venv && \
-    ls -la /app/.venv/bin/pip || echo "Pip not found in bin" && \
-    /usr/bin/python3 -m venv --help > /dev/null && echo "Venv module available" && \
-    echo "--- End Diagnosis ---"
+# 1. 降低 SSL 安全等级（解决 SQL Server 报错 20002 的核心）
+RUN sed -i 's/SECLEVEL=2/SECLEVEL=1/g' /etc/ssl/openssl.cnf
 
-# 4. 安装 Python 驱动到正确的虚拟环境 (/app/.venv)
-# 保留 mysqlclient, clickhouse-connect
-# 增加 pyodbc (配合 msodbcsql18) 和 pymssql (兼容旧版 SQL Server)
-# 去除 pyhive, thrift 等
-# === 尝试安装驱动 ===
-# 使用 python -m pip 是最稳妥的，能自动处理 bin 路径下的解释器关联
-RUN /app/.venv/bin/python3 -m pip install --no-cache-dir --upgrade \
-    mysqlclient \
-    clickhouse-connect \
-    pymssql
+# 2. 修复虚拟环境并安装驱动
+# 第一步：把 pip 装回来
+# 第二步：使用装回来的 pip 安装驱动
+RUN python3 -m ensurepip && \
+    python3 -m pip install --no-cache-dir --upgrade pip && \
+    python3 -m pip install --no-cache-dir \
+        mysqlclient \
+        clickhouse-connect \
+        pymssql
 
 # 5. 权限处理（核心修改）
 # 确保 superset 用户拥有虚拟环境的写权限，以便后续映射 config 后能动态安装驱动
 RUN chown -R superset:superset /app/.venv /app/pythonpath
 
+# 4. 环境变量（保持精简）
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app/pythonpath"
+
 # 6. 拷贝前端静态产物
 COPY --from=frontend-builder /app/superset/static/assets /app/superset/static/assets
-
-ENV PYTHONPATH="/app/pythonpath:/usr/local/lib/python3.10/site-packages"
 
 USER superset
 
