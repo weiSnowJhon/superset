@@ -99,7 +99,11 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
-FEATURE_FLAGS = {"ALERT_REPORTS": True}
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True,
+    "ENABLE_TEMPLATE_PROCESSING": True,  # 开启 Jinja/Handlebars 模板处理
+    "ESCAPE_MARKDOWN_HTML": False,       # 允许在 Markdown/Handlebars 中渲染 HTML
+}
 ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
 WEBDRIVER_BASEURL = f"http://superset_app{os.environ.get('SUPERSET_APP_ROOT', '/')}/"  # When using docker compose baseurl should be http://superset_nginx{ENV{BASEPATH}}/  # noqa: E501
 # The base URL for the email report hyperlinks.
@@ -142,4 +146,13 @@ BABEL_DEFAULT_LOCALE = "zh"
 LANGUAGES = {
     "en": {"flag": "us", "name": "English"},
     "zh": {"flag": "cn", "name": "Chinese"},
+}
+
+HTML_SANITIZATION = False # 内网内
+
+TALISMAN_CONFIG = { 
+    "content_security_policy": {
+        "style-src": ["'self'", "'unsafe-inline'"],
+        # 其他配置保留默认...
+    }
 }
