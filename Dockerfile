@@ -30,6 +30,7 @@ FROM apache/superset:6.0.0
 USER root
 
 # 2. 系统底层依赖
+# 1. 基础系统依赖（确保安装了 gnupg 和 ca-certificates）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         default-libmysqlclient-dev \
@@ -39,12 +40,13 @@ RUN apt-get update && \
         libsasl2-modules-gssapi-mit \
         curl \
         gnupg2 \
+        ca-certificates \
         unixodbc-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # 3. 安装 SQL Server ODBC 驱动 (系统层)
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-    curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/microsoft-archive-keyring.gpg && \
+    echo "deb [arch=amd64,arm64,armhf signed-by=/usr/share/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/debian/11/prod bullseye main" > /etc/apt/sources.list.d/mssql-release.list && \
     apt-get update && \
     ACCEPT_EULA=Y apt-get install -y msodbcsql18 mssql-tools18 && \
     rm -rf /var/lib/apt/lists/*
