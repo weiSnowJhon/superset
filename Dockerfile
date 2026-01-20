@@ -14,10 +14,9 @@ WORKDIR /app/superset-frontend
 
 # 1. 拷贝插件源码
 COPY superset-frontend/plugins/zz-analysis-plugin-chart-echarts ./plugins/zz-analysis-plugin-chart-echarts
-
 # 2. 进入插件目录进行安装和构建
 RUN cd plugins/zz-analysis-plugin-chart-echarts && \
-    npm install && \
+    npm install --legacy-peer-deps && \
     npm run build   # 如果插件需要编译（产生 dist 文件夹）
 
 COPY superset-frontend/package*.json ./
