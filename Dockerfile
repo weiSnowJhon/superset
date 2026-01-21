@@ -71,6 +71,14 @@ RUN apt-get update && \
 # 1. 降低 SSL 安全等级（解决 SQL Server 报错 20002 的核心）
 #RUN sed -i 's/SECLEVEL=2/SECLEVEL=1/g' /etc/ssl/openssl.cnf
 
+# 1. 拷贝本地预编译好的汉化包到容器指定位置
+# 注意：Superset 默认路径是 /app/superset/translations/zh/LC_MESSAGES/
+COPY translations/zh/LC_MESSAGES/messages.mo /app/superset/translations/zh/LC_MESSAGES/messages.mo
+COPY translations/zh/LC_MESSAGES/messages.json /app/superset/translations/zh/LC_MESSAGES/messages.json
+
+# 2. 确保权限正确
+RUN chown -R superset:superset /app/superset/translations/zh/
+
 # 2. 修复虚拟环境并安装驱动
 # 第一步：把 pip 装回来
 # 第二步：使用装回来的 pip 安装驱动
