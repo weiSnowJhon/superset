@@ -69,7 +69,7 @@ RUN apt-get update && \
 #    rm -rf /var/lib/apt/lists/*
 
 # 1. 降低 SSL 安全等级（解决 SQL Server 报错 20002 的核心）
-RUN sed -i 's/SECLEVEL=2/SECLEVEL=1/g' /etc/ssl/openssl.cnf
+#RUN sed -i 's/SECLEVEL=2/SECLEVEL=1/g' /etc/ssl/openssl.cnf
 
 # 2. 修复虚拟环境并安装驱动
 # 第一步：把 pip 装回来
@@ -79,7 +79,7 @@ RUN python3 -m ensurepip && \
     python3 -m pip install --no-cache-dir \
         mysqlclient \
         clickhouse-connect \
-        pymssql
+        pymssql==2.2.7
 
 # 5. 权限处理（核心修改）
 # 确保 superset 用户拥有虚拟环境的写权限，以便后续映射 config 后能动态安装驱动
