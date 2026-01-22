@@ -28,7 +28,7 @@ import {
   sharedControls,
 } from '@superset-ui/chart-controls';
 import { DEFAULT_LEGEND_FORM_DATA, StackControlOptions } from './constants';
-import { DEFAULT_FORM_DATA } from './Timeseries/constants';
+import { DEFAULT_FORM_DATA } from './ZTimeseries/constants';
 import { defaultXAxis } from './defaults';
 
 const { legendMargin, legendOrientation, legendType, showLegend } =

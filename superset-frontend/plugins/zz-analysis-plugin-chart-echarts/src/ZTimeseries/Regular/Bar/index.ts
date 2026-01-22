@@ -55,7 +55,7 @@ export default class EchartsTimeseriesBarChartPlugin extends EchartsChartPlugin<
           Behavior.DrillToDetail,
           Behavior.DrillBy,
         ],
-        category: t('Evolution'),
+        category: t('业务'),
         credits: ['https://echarts.apache.org'],
         description: t(
           'Bar Charts are used to show metrics as a series of bars.',
@@ -71,7 +71,7 @@ export default class EchartsTimeseriesBarChartPlugin extends EchartsChartPlugin<
           AnnotationType.Interval,
           AnnotationType.Timeseries,
         ],
-        name: t('Bar Chart'),
+        name: t('Z Bar Chart'),
         tags: [
           t('ECharts'),
           t('Predictive'),

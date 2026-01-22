@@ -21,6 +21,10 @@ export {
   CardCompareNumberPlugin,
   CardCourseNumberPlugin,
 } from './CardBigNumber';
+export { default as ZEchartsTimeseriesBarChartPlugin } from './ZTimeseries/Regular/Bar';
+export { default as ZEchartsMixedTimeseriesChartPlugin } from './ZMixedTimeseries';
+export { default as ZMixedTimeseriesTransformProps } from './ZMixedTimeseries/transformProps';
+
 
 
 export * from './types';

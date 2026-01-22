@@ -24,7 +24,7 @@ describe('Select buildQuery', () => {
   const formData: PluginFilterSelectQueryFormData = {
     datasource: '5__table',
     groupby: ['my_col'],
-    viz_type: 'filter_select',
+    viz_type: 'filter_button',
     sortAscending: undefined,
     sortMetric: undefined,
     filters: undefined,

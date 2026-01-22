@@ -37,6 +37,7 @@ import {
   FormItem,
   LabeledValue,
   Button,
+  Select,
   Space,
   Constants,
 } from '@superset-ui/core/components';
@@ -485,7 +486,7 @@ export default function PluginFilterSelect(props: PluginFilterSelectProps) {
           appSection={appSection}
           inverseSelection={inverseSelection}
         >
-          {/* {appSection !== AppSection.FilterConfigModal && inverseSelection && (
+          {appSection !== AppSection.FilterConfigModal && inverseSelection && (
             <Select
               className="exclude-select"
               value={`${excludeFilterValues}`}
@@ -495,7 +496,7 @@ export default function PluginFilterSelect(props: PluginFilterSelectProps) {
               ]}
               onChange={handleExclusionToggle}
             />
-          )} */}
+          )}
           {/* // 替换原有的 <Select ... /> 部分 */}
           <Space wrap size={[8, 8]} className="select-container">
             {options.map(opt => {

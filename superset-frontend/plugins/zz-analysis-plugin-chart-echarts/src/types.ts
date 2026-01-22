@@ -191,4 +191,4 @@ export class EchartsChartPlugin<
   }
 }
 
-export * from './Timeseries/types';
+export * from './ZTimeseries/types';

@@ -33,7 +33,7 @@ import {
 } from '@superset-ui/chart-controls';
 
 import { DEFAULT_FORM_DATA } from './types';
-import { EchartsTimeseriesSeriesType } from '../Timeseries/types';
+import { EchartsTimeseriesSeriesType } from '../ZTimeseries/types';
 import {
   legendSection,
   minorTicks,

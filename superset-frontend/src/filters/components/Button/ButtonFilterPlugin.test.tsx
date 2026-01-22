@@ -45,7 +45,7 @@ const selectMultipleProps = {
     defaultValue: ['boy'],
     timeRangeEndpoints: ['inclusive', 'exclusive'],
     urlParams: {},
-    vizType: 'filter_select',
+    vizType: 'filter_button',
     inputRef: { current: null },
     nativeFilterId: 'test-filter',
   },

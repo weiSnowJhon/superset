@@ -53,7 +53,7 @@ export default class EchartsTimeseriesChartPlugin extends EchartsChartPlugin<
           Behavior.DrillToDetail,
           Behavior.DrillBy,
         ],
-        category: t('Evolution'),
+        category: t('业务'),
         credits: ['https://echarts.apache.org'],
         description: t(
           'Visualize two different series using the same x-axis. Note that both series can be visualized with a different chart type (e.g. 1 using bars and 1 using a line).',
@@ -65,7 +65,7 @@ export default class EchartsTimeseriesChartPlugin extends EchartsChartPlugin<
           AnnotationType.Timeseries,
         ],
         exampleGallery: [{ url: example }],
-        name: t('Mixed Chart'),
+        name: t('Z Mixed Chart'),
         thumbnail,
         tags: [
           t('Advanced-Analytics'),

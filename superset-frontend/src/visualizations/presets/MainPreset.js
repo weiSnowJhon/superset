@@ -84,7 +84,12 @@ import { FilterPlugins } from 'src/constants';
 import AgGridTableChartPlugin from '@superset-ui/plugin-chart-ag-grid-table';
 import TimeTableChartPlugin from '../TimeTable';
 
-import { CardCompareNumberPlugin, CardCourseNumberPlugin } from 'zz-analysis-plugin-chart-echarts';
+import { 
+  CardCompareNumberPlugin, 
+  CardCourseNumberPlugin,
+  ZEchartsMixedTimeseriesChartPlugin,
+  ZEchartsTimeseriesBarChartPlugin, 
+} from 'zz-analysis-plugin-chart-echarts';
 
 
 export default class MainPreset extends Preset {
@@ -198,8 +203,11 @@ export default class MainPreset extends Preset {
         }).configure({ key: VizType.Cartodiagram }),
         ...experimentalPlugins,
         ...agGridTablePlugin,
+        // zz-analysis-plugin-chart-echarts visualizations
         new CardCompareNumberPlugin().configure({ key: 'ext_card_compare_number' }),
         new CardCourseNumberPlugin().configure({ key: 'ext_card_course_number' }),
+        new ZEchartsMixedTimeseriesChartPlugin().configure({ key: 'ext_z_mixed_timeseries' }),
+        new ZEchartsTimeseriesBarChartPlugin().configure({ key: 'ext_z_timeseries_bar' }),
       ],
     });
   }

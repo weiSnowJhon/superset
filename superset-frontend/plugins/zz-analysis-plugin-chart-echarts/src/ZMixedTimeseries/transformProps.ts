@@ -89,7 +89,7 @@ import {
   transformIntervalAnnotation,
   transformSeries,
   transformTimeseriesAnnotation,
-} from '../Timeseries/transformers';
+} from '../ZTimeseries/transformers';
 import { TIMEGRAIN_TO_TIMESTAMP, TIMESERIES_CONSTANTS } from '../constants';
 import { getDefaultTooltip } from '../utils/tooltip';
 import {

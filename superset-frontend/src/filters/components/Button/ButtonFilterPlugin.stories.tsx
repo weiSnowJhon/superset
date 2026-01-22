@@ -19,12 +19,12 @@
 import { action } from '@storybook/addon-actions';
 import { SuperChart, getChartTransformPropsRegistry } from '@superset-ui/core';
 import { mockQueryDataForCountries } from 'spec/fixtures/mockNativeFilters';
-import SelectFilterPlugin from './index';
+import ButtonFilterPlugin from './index';
 import transformProps from './transformProps';
 
-new SelectFilterPlugin().configure({ key: 'filter_select' }).register();
+new ButtonFilterPlugin().configure({ key: 'filter_button' }).register();
 
-getChartTransformPropsRegistry().registerValue('filter_select', transformProps);
+getChartTransformPropsRegistry().registerValue('filter_button', transformProps);
 
 export default {
   title: 'Components/Filter Plugins',
@@ -49,7 +49,7 @@ export const Select = ({
   height: number;
 }) => (
   <SuperChart
-    chartType="filter_select"
+    chartType="filter_button"
     width={width}
     height={height}
     queriesData={[{ data: mockQueryDataForCountries }]}
@@ -60,7 +60,7 @@ export const Select = ({
       multiSelect: { multiSeelct },
       inverseSelection: { inverseSelection },
       row_limit: 1000,
-      viz_type: 'filter_select',
+      viz_type: 'filter_button',
       groupby: ['country_name'],
       metrics: ['SUM(SP_POP_TOTL)'],
     }}
