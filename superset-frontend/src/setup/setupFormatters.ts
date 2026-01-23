@@ -77,9 +77,11 @@ export default function setupFormatters(
     .registerValue(
       'DURATION_ZH',
       (() => {
-        const baseFormatter = createDurationFormatter();
-        return (value: number | null | undefined) => {
-          const formatted = baseFormatter(value as any);
+        const zhFormatter = createDurationFormatter();
+        // Override the formatFunc property to localize the output
+        const origFormatFunc = zhFormatter.formatFunc;
+        zhFormatter.formatFunc = (value: number) => {
+          const formatted = origFormatFunc(value);
           if (typeof formatted !== 'string') return formatted;
           let s = formatted;
           // 先替换长单词形式
@@ -102,6 +104,7 @@ export default function setupFormatters(
 
           return s;
         };
+        return zhFormatter;
       })(),
     )
     .registerValue(
