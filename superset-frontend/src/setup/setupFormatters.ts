@@ -72,8 +72,38 @@ export default function setupFormatters(
     .registerValue('.0%f', getNumberFormatter('.1%'))
     .registerValue('$,0', getNumberFormatter('$,.4f'))
     .registerValue('$,0f', getNumberFormatter('$,.4f'))
-    .registerValue('$,.f', getNumberFormatter('$,.4f'))
+    .registerValue('$,.f', getNumberFormatter('$,.4~f'))
     .registerValue('DURATION', createDurationFormatter())
+    .registerValue(
+      'DURATION_ZH',
+      (() => {
+        const baseFormatter = createDurationFormatter();
+        return (value: number | null | undefined) => {
+          const formatted = baseFormatter(value as any);
+          if (typeof formatted !== 'string') return formatted;
+          let s = formatted;
+          // 先替换长单词形式
+          s = s
+            .replace(/\bmilliseconds?\b/gi, '毫秒')
+            .replace(/\bhours?\b/gi, '小时')
+            .replace(/\bhrs?\b/gi, '小时')
+            .replace(/\bminutes?\b/gi, '分钟')
+            .replace(/\bmins?\b/gi, '分钟')
+            .replace(/\bseconds?\b/gi, '秒')
+            .replace(/\bsecs?\b/gi, '秒');
+
+          // 再处理紧凑的数字+字母单位（如 1d 3h 46m 2s）
+          s = s
+            .replace(/(\d+)\s*ms/g, '$1毫秒')
+            .replace(/(\d+)\s*d/g, '$1天')
+            .replace(/(\d+)\s*h/g, '$1时')
+            .replace(/(\d+)\s*m(?!s)/g, '$1分')
+            .replace(/(\d+)\s*s/g, '$1秒');
+
+          return s;
+        };
+      })(),
+    )
     .registerValue(
       'DURATION_SUB',
       createDurationFormatter({ formatSubMilliseconds: true }),

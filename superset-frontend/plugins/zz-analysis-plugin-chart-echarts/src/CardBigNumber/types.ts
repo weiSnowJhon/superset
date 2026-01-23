@@ -26,6 +26,7 @@ import {
   QueryFormMetric,
   TimeFormatter,
   ValueFormatter,
+  SetDataMaskHook,
 } from '@superset-ui/core';
 import { ColorFormatters } from '@superset-ui/chart-controls';
 import { BaseChartProps, Refs } from '../types';
@@ -71,6 +72,9 @@ export type BigNumberVizProps = {
   className?: string;
   width: number;
   height: number;
+  showHoverEffect?: boolean;
+  callbackIdentifier?: string;
+  setDataMask?: SetDataMaskHook;
   bigNumber?: DataRecordValue;
   bigNumberFallback?: TimeSeriesDatum;
   headerFormatter: ValueFormatter | TimeFormatter;

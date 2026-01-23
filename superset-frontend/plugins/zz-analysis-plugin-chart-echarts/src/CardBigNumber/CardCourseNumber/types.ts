@@ -1,5 +1,13 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
+ * Licensed toimport { QueryFormData, QueryFormMetric, DataMask } from '@superset-ui/core';
+
+export interface CardCourseNumberFormData extends QueryFormData {
+
+  // 是否显示悬停效果控制
+  showHoverEffect?: boolean;
+  
+  // 回调标识
+  callbackIdentifier?: string;pache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
@@ -16,9 +24,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { QueryFormData, QueryFormMetric } from '@superset-ui/core';
+import { QueryFormData, QueryFormMetric, SetDataMaskHook } from '@superset-ui/core';
 
 export interface CardCourseNumberFormData extends QueryFormData {
+
+  // 是否显示悬停效果控制
+  showHoverEffect?: boolean;
+  
+  // 回调标识
+  callbackIdentifier?: string;
   // 课程名称
   courseName?: string;
   courseNameFontSize?: number;
@@ -32,6 +46,7 @@ export interface CardCourseNumberFormData extends QueryFormData {
   unitFontSize?: number;
   
   // 右侧指标
+  metricsFontSize?: number;
   metric1?: QueryFormMetric;
   metric1Label?: string;
   
@@ -47,9 +62,20 @@ export interface CardCourseNumberFormData extends QueryFormData {
 }
 
 export interface CourseNumberVizProps {
+
   width: number;
   height: number;
   
+  // 是否显示悬停效果控制
+  showHoverEffect?: boolean;
+  callbackIdentifier?: string;
+  
+  // DataMask hook for cross-filtering
+  setDataMask?: SetDataMaskHook;
+
+  // 类
+  className?: string;
+
   // 课程信息
   courseName?: string;
   courseNameFontSize: number;
@@ -62,6 +88,8 @@ export interface CourseNumberVizProps {
   unit?: string;
   unitFontSize: number;
   
+    // 右侧指标
+  metricsFontSize?: number;
   // 右侧指标
   metric1Value?: number | null;
   metric1Label?: string;

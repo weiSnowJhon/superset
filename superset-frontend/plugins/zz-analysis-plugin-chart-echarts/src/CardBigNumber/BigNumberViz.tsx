@@ -45,6 +45,8 @@ const PROPORTION = {
 };
 
 function BigNumberVis({
+  showHoverEffect = false,
+  callbackIdentifier = '',
   className = '',
   headerFormatter = defaultNumberFormatter,
   formatTime = getTimeFormatter(SMART_DATE_VERBOSE_ID),
@@ -87,6 +89,23 @@ function BigNumberVis({
   useEffect(() => {
     // Re-render when height or showTrendLine changes
   }, [props.height, showTrendLine]);
+
+  const handleCardClick = () => {
+    const { metricName, setDataMask } = props;
+    console.log('BigNumber card clicked!', { callbackIdentifier, metricName });
+    
+    // Trigger cross-filtering if callbackIdentifier is provided and setDataMask exists
+    if (callbackIdentifier && setDataMask) {
+      setDataMask({
+        extraFormData: {},
+        filterState: {
+          value: callbackIdentifier,
+          label: callbackIdentifier || metricName,
+        },
+      });
+    }
+  };
+
 
   const getClassName = () => {
     const names = `superset-legacy-chart-big-number ${className} ${
@@ -550,6 +569,7 @@ function BigNumberVis({
   return (
     <div
       className={componentClassName}
+      onClick={handleCardClick}
       style={{
         height,
         ...(overflow
@@ -575,14 +595,18 @@ function BigNumberVis({
   );
 }
 
-const StyledBigNumberVis = styled(BigNumberVis)`
-  ${({ theme }) => `
+const StyledBigNumberVis = styled(BigNumberVis)<{ showHoverEffect?: boolean }>`
+  ${({ theme, showHoverEffect }) => `
     font-family: ${theme.fontFamily};
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
+
+    border: 1px solid #d9d9d9;
+    cursor: ${showHoverEffect ? 'pointer' : 'default'};
+    transition: all 0.3s ease;
 
     &.no-trendline .subheader-line {
       padding-bottom: 0.3em;
@@ -641,6 +665,21 @@ const StyledBigNumberVis = styled(BigNumberVis)`
         opacity: 60%;
       }
     }
+
+    ${showHoverEffect ? `
+      &:hover {
+        border-color: #1890ff;
+        box-shadow: 0 4px 16px rgba(24, 144, 255, 0.5);
+        background-color: rgba(24, 144, 255, 0.05);
+      }
+      
+      &:active {
+        transform: scale(0.95);
+        border-color: #ff4d4f;
+        background-color: rgba(255, 77, 79, 0.2);
+      }
+    ` : ''}
+
   `}
 `;
 

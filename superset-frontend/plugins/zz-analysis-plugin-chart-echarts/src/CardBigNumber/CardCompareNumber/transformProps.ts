@@ -84,6 +84,8 @@ export default function transformProps(
     datasource: { currencyFormats = {}, columnFormats = {} },
   } = chartProps;
   const {
+    showHoverEffect = false,
+    callbackIdentifier,
     colorPicker,
     compareLag: compareLag_,
     compareSuffix = '',
@@ -352,11 +354,14 @@ export default function transformProps(
       }
     : {};
 
-  const { onContextMenu } = hooks;
+  const { onContextMenu, setDataMask } = hooks;
 
   return {
     width,
     height,
+    showHoverEffect,
+    callbackIdentifier,
+    setDataMask,
     bigNumber,
     // @ts-ignore
     bigNumberFallback,

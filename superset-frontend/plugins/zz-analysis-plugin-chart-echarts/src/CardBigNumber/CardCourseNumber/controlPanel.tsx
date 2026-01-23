@@ -22,6 +22,14 @@ import {
   D3_FORMAT_DOCS,
   sharedControls,
 } from '@superset-ui/chart-controls';
+import {
+  showHoverEffectControl,
+  courseNameFontSize,
+  mainNumberFontSize,
+  unitFontSize,
+  metricsFontSize,
+  callbackIdentifierControl,
+} from '../sharedControls';
 
 const config: ControlPanelConfig = {
   controlPanelSections: [
@@ -128,64 +136,14 @@ const config: ControlPanelConfig = {
       label: t('Chart Options'),
       expanded: true,
       controlSetRows: [
-        [
-          {
-            name: 'courseNameFontSize',
-            config: {
-              type: 'SelectControl',
-              label: t('Course Name Font Size'),
-              renderTrigger: true,
-              clearable: false,
-              default: 0.08,
-              options: [
-                { label: t('Tiny'), value: 0.05 },
-                { label: t('Small'), value: 0.08 },
-                { label: t('Normal'), value: 0.1 },
-                { label: t('Large'), value: 0.125 },
-                { label: t('Huge'), value: 0.15 },
-              ],
-            },
-          },
-        ],
-        [
-          {
-            name: 'mainNumberFontSize',
-            config: {
-              type: 'SelectControl',
-              label: t('Main Number Font Size'),
-              renderTrigger: true,
-              clearable: false,
-              default: 0.25,
-              options: [
-                { label: t('Small'), value: 0.15 },
-                { label: t('Normal'), value: 0.2 },
-                { label: t('Large'), value: 0.25 },
-                { label: t('Huge'), value: 0.3 },
-              ],
-            },
-          },
-        ],
-        [
-          {
-            name: 'unitFontSize',
-            config: {
-              type: 'SelectControl',
-              label: t('Unit Font Size'),
-              renderTrigger: true,
-              clearable: false,
-              default: 0.08,
-              options: [
-                { label: t('Tiny'), value: 0.05 },
-                { label: t('Small'), value: 0.08 },
-                { label: t('Normal'), value: 0.1 },
-                { label: t('Large'), value: 0.125 },
-              ],
-            },
-          },
-        ],
+        [showHoverEffectControl],
+        [callbackIdentifierControl],
+        [courseNameFontSize],
+        [mainNumberFontSize],
+        [unitFontSize],
+        [metricsFontSize],
         ['y_axis_format'],
         [
-        // 新增：Metric 1 独立的格式化器
           {
             name: 'metric1_format',
             config: {
@@ -196,7 +154,6 @@ const config: ControlPanelConfig = {
           },
         ],
         [
-           // 新增：Metric 2 独立的格式化器
           {
             name: 'metric2_format',
             config: {
@@ -207,7 +164,6 @@ const config: ControlPanelConfig = {
           },
         ],
         [
-          // 新增：Metric 3 独立的格式化器
           {
             name: 'metric3_format',
             config: {
@@ -216,7 +172,7 @@ const config: ControlPanelConfig = {
               description: D3_FORMAT_DOCS,
             },
           },
-        ]
+        ],
       ],
     },
   ],

@@ -56,6 +56,7 @@ export const D3_FORMAT_OPTIONS: [string, string][] = [
   ['~g', t('Original value')],
   ...d3Formatted,
   ['DURATION', t('Duration in ms (66000 => 1m 6s)')],
+  ['DURATION_ZH', t('Duration_ZH in ms (66000 => 1分 6秒)')],
   ['DURATION_SUB', t('Duration in ms (1.40008 => 1ms 400µs 80ns)')],
   ['DURATION_COL', t('Duration in ms (10500 => 0:10.5)')],
   ['MEMORY_DECIMAL', t('Memory in bytes - decimal (1024B => 1.024kB)')],

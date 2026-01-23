@@ -33,6 +33,8 @@ import {
   subtitleControl,
   showMetricNameControl,
   metricNameFontSizeWithVisibility,
+  showHoverEffectControl,
+  callbackIdentifierControl,
 } from '../sharedControls';
 
 const config: ControlPanelConfig = {
@@ -161,6 +163,8 @@ const config: ControlPanelConfig = {
       label: t('Chart Options'),
       expanded: true,
       controlSetRows: [
+        [showHoverEffectControl],
+        [callbackIdentifierControl],
         ['color_picker', null],
         [headerFontSize],
         [subheaderFontSize],

@@ -113,3 +113,77 @@ export const metricNameFontSizeWithVisibility: CustomControlItem = {
     resetOnHide: false,
   },
 };
+
+// Course card specific controls
+const FONT_SIZE_OPTIONS_COURSE = [
+  { label: t('Tiny'), value: 0.05 },
+  { label: t('Small'), value: 0.08 },
+  { label: t('Normal'), value: 0.1 },
+  { label: t('Large'), value: 0.125 },
+  { label: t('Huge'), value: 0.15 },
+];
+
+const FONT_SIZE_OPTIONS_MAIN_NUMBER = [
+  { label: t('Small'), value: 0.15 },
+  { label: t('Normal'), value: 0.2 },
+  { label: t('Large'), value: 0.25 },
+  { label: t('Huge'), value: 0.3 },
+];
+
+const FONT_SIZE_OPTIONS_METRICS = [
+  { label: t('Tiny'), value: 0.06 },
+  { label: t('Small'), value: 0.08 },
+  { label: t('Normal'), value: 0.12 },
+  { label: t('Large'), value: 0.15 },
+  { label: t('Huge'), value: 0.18 },
+];
+
+export const courseNameFontSize = makeFontSizeControl(
+  'courseNameFontSize',
+  'Course Name Font Size',
+  0.08,
+  FONT_SIZE_OPTIONS_COURSE,
+);
+
+export const mainNumberFontSize = makeFontSizeControl(
+  'mainNumberFontSize',
+  'Main Number Font Size',
+  0.25,
+  FONT_SIZE_OPTIONS_MAIN_NUMBER,
+);
+
+export const unitFontSize = makeFontSizeControl(
+  'unitFontSize',
+  'Unit Font Size',
+  0.08,
+  FONT_SIZE_OPTIONS_COURSE.slice(0, 4), // Only Tiny to Large
+);
+
+export const metricsFontSize = makeFontSizeControl(
+  'metricsFontSize',
+  'Metrics Font Size',
+  0.12,
+  FONT_SIZE_OPTIONS_METRICS,
+);
+
+export const showHoverEffectControl: CustomControlItem = {
+  name: 'showHoverEffect',
+  config: {
+    type: 'CheckboxControl',
+    label: t('Show Hover Effect'),
+    renderTrigger: true,
+    default: false,
+    description: t('Enable hover and click effects on the card'),
+  },
+};
+
+export const callbackIdentifierControl: CustomControlItem = {
+  name: 'callbackIdentifier',
+  config: {
+    type: 'TextControl',
+    label: t('Callback Identifier'),
+    renderTrigger: true,
+    default: '',
+    description: t('Optional identifier to pass when card is clicked (e.g., course_id, metric_name)'),
+  },
+};

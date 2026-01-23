@@ -17,6 +17,7 @@
  * under the License.
  */
 import { t, ChartMetadata, ChartPlugin } from '@superset-ui/core';
+import buildQuery from './buildQuery';
 import transformProps from './transformProps';
 import thumbnail from './images/course_card_template.png';
 import example1 from './images/course_card_template.png';
@@ -34,6 +35,7 @@ export default class CardCourseNumberChartPlugin extends ChartPlugin {
     });
 
     super({
+      buildQuery,
       loadChart: () => import('./CourseNumberViz'),
       metadata,
       transformProps,

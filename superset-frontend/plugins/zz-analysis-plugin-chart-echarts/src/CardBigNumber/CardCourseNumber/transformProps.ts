@@ -22,16 +22,22 @@ import { CardCourseNumberFormData, CourseNumberVizProps } from './types';
 export default function transformProps(
   chartProps: ChartProps,
 ): CourseNumberVizProps {
-  const { width, height, queriesData, formData } = chartProps;
+  const { width, height, queriesData, formData, hooks } = chartProps;
   const { data = [] } = queriesData[0] || {};
+  
+  // Extract setDataMask from hooks
+  const { setDataMask } = hooks;
 
   const {
+    showHoverEffect = false,
+    callbackIdentifier = '',
     courseName = '体系框架课',
     courseNameFontSize = 0.08,
     metric,
     mainNumberFontSize = 0.25,
     unit = '节',
     unitFontSize = 0.08,
+    metricsFontSize = 0.12,
     metric1,
     metric1Label = '听课次数',
     metric2,
@@ -49,7 +55,6 @@ export default function transformProps(
   const metric1Formatter = getNumberFormatter(metric1_format);
   const metric2Formatter = getNumberFormatter(metric2_format);
   const metric3Formatter = getNumberFormatter(metric3_format);
-
 
   // Helper function to get metric value from data
   const getMetricValue = (metricConfig: any): number | null => {
@@ -69,12 +74,16 @@ export default function transformProps(
   return {
     width,
     height,
+    showHoverEffect,
+    callbackIdentifier,
+    setDataMask,
     courseName,
     courseNameFontSize,
     mainNumber,
     mainNumberFontSize,
     unit,
     unitFontSize,
+    metricsFontSize,
     metric1Value,
     metric1Label,
     metric2Value,
