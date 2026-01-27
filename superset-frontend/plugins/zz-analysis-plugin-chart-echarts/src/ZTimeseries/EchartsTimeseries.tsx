@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import {
   DTTM_ALIAS,
   BinaryQueryObjectFilterClause,
@@ -321,6 +321,182 @@ export default function EchartsTimeseries({
     },
   };
 
+  // 新增：基于 showDetailClick 动态调整 tooltip，并处理按钮点击
+  const modifiedOptions = useMemo(() => {
+    const opts = echartOptions ?? {};
+    if (!formData?.showDetailClick) return opts;
+
+    // shallow clone tooltip object from original options to preserve other settings
+    const tooltip = { ...(opts.tooltip || {}) } as any;
+
+    // ensure confined and item trigger unless explicitly set
+    tooltip.trigger = tooltip.trigger ?? 'item';
+    tooltip.confine = tooltip.confine ?? true;
+
+    // allow mouse enter into tooltip and make it top-most and interactive
+    tooltip.enterable = true;
+    tooltip.appendToBody = tooltip.appendToBody ?? true;
+    tooltip.extraCssText = (tooltip.extraCssText ? tooltip.extraCssText + ';' : '') + 'pointer-events:auto; z-index:9999;';
+
+    // fixed position relative to the hovered element (prefer right side, fallback above center)
+    tooltip.position = function (pos: any, params: any, el: any, elRect: any) {
+      try {
+        if (elRect && typeof elRect.x === 'number' && typeof elRect.width === 'number') {
+          // position to the right of the element if space permits, else above
+          const rightX = elRect.x + elRect.width + 12;
+          const aboveY = elRect.y - 8;
+          // basic viewport check: if rightX within window, use it
+          if (rightX + 300 < (window?.innerWidth || 0)) {
+            return [rightX, elRect.y + elRect.height / 2];
+          }
+          return [elRect.x + elRect.width / 2, Math.max(0, aboveY)];
+        }
+      } catch (e) {
+        // fallback to default mouse position
+      }
+      return pos;
+    };
+
+    // preserve original formatter if present
+    const origFormatter = tooltip.formatter;
+
+    // wrapper formatter: reuse original formatter output, then append detail link per series when showDetailClick
+    tooltip.formatter = function (params: any) {
+      const paramsArr = Array.isArray(params) ? params : [params];
+
+      // If showDetailClick is enabled, reuse origFormatter output and inject per-row links
+      if (typeof origFormatter === 'function' && formData?.showDetailClick) {
+        let fullBaseHtml = origFormatter(paramsArr) ?? '';
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(String(fullBaseHtml), 'text/html');
+          const table = doc.querySelector('table');
+          if (table) {
+            const rows = Array.from(table.querySelectorAll('tr'));
+            rows.forEach((tr, idx) => {
+              // 最后一个不添加查看详情
+              if (idx === rows.length - 1) return;
+
+              const tds = Array.from(tr.querySelectorAll('td'));
+              const rightTd = tds.length ? tds[tds.length - 1] : null;
+              if (!rightTd) return;
+
+              const p = paramsArr[idx];
+              const a = doc.createElement('a');
+              a.setAttribute('href', '#');
+              a.className = 'echarts-detail-link';
+              a.textContent = '查看详情';
+
+              if (p) {
+                if (p.seriesName) a.setAttribute('data-series', String(p.seriesName));
+                const xRaw = Array.isArray(p.data) ? p.data[0] : p.name;
+                a.setAttribute('data-name', String(xRaw ?? ''));
+                const val = Array.isArray(p.value) ? p.value[1] : p.value;
+                a.setAttribute('data-value', encodeURIComponent(String(val ?? '')));
+              }
+
+              // set margin-left and append the link to the right cell
+              a.style.marginLeft = '20px';
+              rightTd.appendChild(a);
+            });
+
+            // return the modified HTML
+            return doc.body.innerHTML;
+          }
+        } catch (err) {
+          // parsing/manipulation failed — fall back to original HTML
+          return fullBaseHtml;
+        }
+
+        return fullBaseHtml;
+      }
+
+      // wrapper formatter: reuse original formatter output, then append detail link per series when showDetailClick
+      tooltip.formatter = function (params: any) {
+        const paramsArr = Array.isArray(params) ? params : [params];
+
+        // If not enabling showDetailClick, fall back to original formatter behavior
+        if (formData?.showDetailClick) {
+          let fullBaseHtml = origFormatter(paramsArr) ?? '';
+          return fullBaseHtml;
+        }
+
+        // Try to get full formatted HTML once to detect header (e.g., x/total)
+        let fullBaseHtml: string | undefined;
+        try {
+          if (typeof origFormatter === 'function') {
+            fullBaseHtml = origFormatter(params) ?? '';
+          }
+        } catch (e) {
+          fullBaseHtml = undefined;
+        }
+
+        return fullBaseHtml || '';
+      };
+
+      // preserve original position if set, otherwise keep as-is (we don't force position here)
+      // return new options with only tooltip overridden
+      return {
+        ...opts,
+        tooltip,
+      };
+    };
+
+    // preserve original position if set, otherwise keep as-is (we don't force position here)
+    // return new options with only tooltip overridden
+    return {
+      ...opts,
+      tooltip,
+    };
+  }, [echartOptions, formData?.showDetailClick]);
+
+  // 事件委托：捕获 tooltip 中的“查看详情”链接点击
+  useEffect(() => {
+    if (!formData?.showDetailClick) return undefined;
+
+    // 全局监听 document 的点击事件，避免依赖 chartDom（可能为 undefined）
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const link = target.closest('.echarts-detail-link') as HTMLElement | null;
+      if (!link) return;
+
+      e.preventDefault();
+
+      // 从 link 的 data 属性中提取轴值和系列标识
+      const rawName = link.getAttribute('data-name');
+      const rawSeries = link.getAttribute('data-series');
+      const rawValue = link.getAttribute('data-value');
+
+      const axisValue = rawName ? decodeURIComponent(String(rawName)) : undefined;
+      const seriesId = rawSeries ? decodeURIComponent(String(rawSeries)) : undefined;
+      const dataValue = rawValue ? decodeURIComponent(String(rawValue)) : undefined;
+
+      // 优先使用 setDataMask 进行跨过滤/回调通知，传递 axisValue 和 seriesId
+      if (setDataMask) {
+        const filterStateValue = {
+          value: { axisValue, seriesId, dataValue },
+          label: seriesId ? `${seriesId} · ${axisValue ?? ''}` : String(axisValue ?? dataValue ?? ''),
+        };
+        setDataMask({
+          extraFormData: {},
+          filterState: filterStateValue,
+          ownState: filterStateValue,
+        });
+        console.log("查看详情发出通知:filterState", filterStateValue);
+        return;
+      }
+
+      // fallback: 调用 onContextMenu 如果可用
+      if (onContextMenu) {
+        onContextMenu((e as MouseEvent).clientX, (e as MouseEvent).clientY);
+      }
+    };
+
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [formData?.showDetailClick, setDataMask, onContextMenu]);
+
   return (
     <>
       <div ref={extraControlRef}>
@@ -331,7 +507,7 @@ export default function EchartsTimeseries({
         refs={refs}
         height={height - extraControlHeight}
         width={width}
-        echartOptions={echartOptions}
+        echartOptions={modifiedOptions}
         eventHandlers={eventHandlers}
         zrEventHandlers={zrEventHandlers}
         selectedValues={selectedValues}

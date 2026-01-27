@@ -41,6 +41,10 @@ import {
   xAxisLabelInterval,
 } from '../../../controls';
 
+import {
+  showDetailClickControl,
+} from '../../sharedControls';
+
 import { OrientationType } from '../../types';
 import {
   DEFAULT_FORM_DATA,
@@ -320,6 +324,7 @@ const config: ControlPanelConfig = {
       label: t('Chart Options'),
       expanded: true,
       controlSetRows: [
+        [showDetailClickControl],
         ...seriesOrderSection,
         ['color_scheme'],
         ['time_shift_color'],
