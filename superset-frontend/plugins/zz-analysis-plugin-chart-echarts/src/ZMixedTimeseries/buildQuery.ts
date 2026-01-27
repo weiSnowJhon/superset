@@ -48,8 +48,9 @@ export default function buildQuery(formData: QueryFormData) {
 
   const formData1 = removeFormDataSuffix(baseFormData, '_b');
   const formData2 = retainFormDataSuffix(baseFormData, '_b');
+  const formData3 = retainFormDataSuffix(baseFormData, '_c');
 
-  const queryContexts = [formData1, formData2].map(fd =>
+  const queryContexts = [formData1, formData2, formData3].map(fd =>
     buildQueryContext(fd, baseQueryObject => {
       const queryObject = {
         ...baseQueryObject,
@@ -88,6 +89,6 @@ export default function buildQuery(formData: QueryFormData) {
 
   return {
     ...queryContexts[0],
-    queries: [...queryContexts[0].queries, ...queryContexts[1].queries],
+    queries: [...queryContexts[0].queries, ...queryContexts[1].queries, ...queryContexts[2].queries],
   };
 }

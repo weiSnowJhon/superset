@@ -341,6 +341,8 @@ const config: ControlPanelConfig = {
     createAdvancedAnalyticsSection(t('Advanced analytics Query A'), ''),
     createQuerySection(t('Query B'), '_b'),
     createAdvancedAnalyticsSection(t('Advanced analytics Query B'), '_b'),
+    createQuerySection(t('Query C'), '_c'),
+    createAdvancedAnalyticsSection(t('Advanced analytics Query C'), '_c'),
     sections.annotationsAndLayersControls,
     sections.titleControls,
     {
@@ -351,6 +353,7 @@ const config: ControlPanelConfig = {
         ['time_shift_color'],
         ...createCustomizeSection(t('Query A'), ''),
         ...createCustomizeSection(t('Query B'), 'B'),
+        ...createCustomizeSection(t('Query C'), 'C'),
         ['zoomable'],
         [minorTicks],
         ...legendSection,
