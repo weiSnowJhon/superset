@@ -62,6 +62,8 @@ function BigNumberVis({
   subheaderFontSize = PROPORTION.SUBHEADER,
   subtitleFontSize = PROPORTION.SUBHEADER,
   timeRangeFixed = false,
+  setDataMask,
+  metricName = '',
   ...props
 }: BigNumberVizProps) {
   const theme = useTheme();
@@ -91,16 +93,25 @@ function BigNumberVis({
   }, [props.height, showTrendLine]);
 
   const handleCardClick = () => {
-    const { metricName, setDataMask } = props;
+    const labelName = callbackIdentifier || metricName;
     console.log('BigNumber card clicked!', { callbackIdentifier, metricName });
     
     // Trigger cross-filtering if callbackIdentifier is provided and setDataMask exists
     if (callbackIdentifier && setDataMask) {
       setDataMask({
-        extraFormData: {},
+        extraFormData: {
+          filters: [
+            {
+              col: labelName,
+              op: 'IN' as const,
+              val: [callbackIdentifier],
+            }
+          ],
+        },
         filterState: {
-          value: callbackIdentifier,
-          label: callbackIdentifier || metricName,
+          label: [callbackIdentifier],
+          value: [callbackIdentifier],
+          selectedValues: [callbackIdentifier],
         },
       });
     }
@@ -141,7 +152,7 @@ function BigNumberVis({
   };
 
   const renderMetricName = (maxHeight: number) => {
-    const { metricName, width } = props;
+    const {  width } = props;
     if (!showMetricName || !metricName) return null;
 
     const text = metricName;
@@ -571,14 +582,15 @@ function BigNumberVis({
       className={componentClassName}
       onClick={handleCardClick}
       style={{
-        height,
+        width: `calc(${props.width}px - 2px)`,
+        height: `calc(${height}px - 2px)`,
+        boxSizing: 'border-box',
+        margin: '1px',
         ...(overflow
           ? {
               display: 'block',
-              boxSizing: 'border-box',
               overflowX: 'hidden',
               overflowY: 'auto',
-              width: '100%',
             }
           : {}),
       }}
@@ -613,6 +625,7 @@ const StyledBigNumberVis = styled(BigNumberVis)<{ showHoverEffect?: boolean }>`
     }
 
     .text-container {
+      padding-left: ${theme.sizeUnit * 2}px;
       display: flex;
       flex-direction: column;
       justify-content: center;

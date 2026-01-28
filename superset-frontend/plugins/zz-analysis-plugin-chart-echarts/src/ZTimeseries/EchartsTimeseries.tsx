@@ -323,6 +323,7 @@ export default function EchartsTimeseries({
 
   // 新增：基于 showDetailClick 动态调整 tooltip，并处理按钮点击
   const modifiedOptions = useMemo(() => {
+    debugger
     const opts = echartOptions ?? {};
     if (!formData?.showDetailClick) return opts;
 
@@ -374,8 +375,8 @@ export default function EchartsTimeseries({
           if (table) {
             const rows = Array.from(table.querySelectorAll('tr'));
             rows.forEach((tr, idx) => {
-              // 最后一个不添加查看详情
-              if (idx === rows.length - 1) return;
+              // 如果表单项中，Dimensions不为空，最后一个不添加查看详情
+              if (idx === rows.length - 1 && formData?.groupby?.length) return;
 
               const tds = Array.from(tr.querySelectorAll('td'));
               const rightTd = tds.length ? tds[tds.length - 1] : null;
