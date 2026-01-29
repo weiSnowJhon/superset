@@ -482,10 +482,8 @@ export default function EchartsTimeseries({
 
       const clickData: ChartClickEventData = {
         chartId: 0,
-        value: axisValue,
         timestamp: Date.now(),
         chartType: 'z_bar_chart',
-        label: xAxis.label,
         ...filterStateValue,
       };
 
