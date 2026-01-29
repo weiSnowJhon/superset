@@ -28,6 +28,7 @@ import {
   BinaryQueryObjectFilterClause,
   useTheme,
 } from '@superset-ui/core';
+import { emitChartClickEvent, type ChartClickEventData } from 'src/chartEvents';
 import Echart from '../components/Echart';
 import { BigNumberVizProps } from './types';
 import { EventHandlers } from '../types';
@@ -94,10 +95,27 @@ function BigNumberVis({
 
   const handleCardClick = () => {
     const labelName = callbackIdentifier || metricName;
-    console.log('BigNumber card clicked!', { callbackIdentifier, metricName });
     
-    // Trigger cross-filtering if callbackIdentifier is provided and setDataMask exists
+    // Use lightweight chart event system (no Redux, no refresh)
+    if (labelName && showHoverEffect) {
+      const clickData: ChartClickEventData = {
+        chartId: 0,
+        value: callbackIdentifier,
+        metricName,
+        timestamp: Date.now(),
+        chartType: 'z_big_number',
+        labelName,
+      };
+      
+      emitChartClickEvent(clickData);
+      return;
+    }
+
+    // Fallback: setDataMask for cross-filtering (triggers refresh)
+    /*
     if (callbackIdentifier && setDataMask) {
+      // eslint-disable-next-line no-console
+      console.log('[BigNumberViz] Falling back to setDataMask');
       setDataMask({
         extraFormData: {
           filters: [
@@ -105,7 +123,7 @@ function BigNumberVis({
               col: labelName,
               op: 'IN' as const,
               val: [callbackIdentifier],
-            }
+            },
           ],
         },
         filterState: {
@@ -115,8 +133,8 @@ function BigNumberVis({
         },
       });
     }
+    */
   };
-
 
   const getClassName = () => {
     const names = `superset-legacy-chart-big-number ${className} ${
@@ -616,7 +634,7 @@ const StyledBigNumberVis = styled(BigNumberVis)<{ showHoverEffect?: boolean }>`
     justify-content: center;
     align-items: flex-start;
 
-    border: 1px solid #d9d9d9;
+    border:  ${showHoverEffect ? '1px solid #d9d9d9;' : 'none'};
     cursor: ${showHoverEffect ? 'pointer' : 'default'};
     transition: all 0.3s ease;
 

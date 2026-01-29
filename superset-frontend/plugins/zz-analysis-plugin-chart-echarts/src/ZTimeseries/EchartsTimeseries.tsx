@@ -35,6 +35,7 @@ import Echart from '../components/Echart';
 import { TimeseriesChartTransformedProps } from './types';
 import { formatSeriesName } from '../utils/series';
 import { ExtraControls } from '../components/ExtraControls';
+import { emitChartClickEvent, type ChartClickEventData } from 'src/chartEvents';
 
 const TIMER_DURATION = 300;
 
@@ -184,6 +185,17 @@ export default function EchartsTimeseries({
           // 自定义逻辑：按 X 轴过滤 (解决你提到的 category 场景)
           const xField = xAxis.label; // 获取 X 轴字段名
           
+          const clickData: ChartClickEventData = {
+            chartId: 0,
+            value: xAxisValue,
+            timestamp: Date.now(),
+            chartType: 'z_bar_chart',
+            label: xAxis.label,
+          };
+          
+          emitChartClickEvent(clickData);
+          return;
+          /*
           const dataMask = {
             extraFormData: {
               filters: [
@@ -204,6 +216,7 @@ export default function EchartsTimeseries({
           // 发出通知
           console.log("自定义修改发出通知:",dataMask)
           setDataMask(dataMask);
+          */
         }
       }, TIMER_DURATION);
     },
@@ -412,35 +425,17 @@ export default function EchartsTimeseries({
         return fullBaseHtml;
       }
 
-      // wrapper formatter: reuse original formatter output, then append detail link per series when showDetailClick
-      tooltip.formatter = function (params: any) {
-        const paramsArr = Array.isArray(params) ? params : [params];
-
-        // If not enabling showDetailClick, fall back to original formatter behavior
-        if (formData?.showDetailClick) {
-          let fullBaseHtml = origFormatter(paramsArr) ?? '';
-          return fullBaseHtml;
+      // If not enabling showDetailClick, fall back to original formatter behavior
+      let fullBaseHtml: string | undefined;
+      try {
+        if (typeof origFormatter === 'function') {
+          fullBaseHtml = origFormatter(params) ?? '';
         }
+      } catch (e) {
+        fullBaseHtml = undefined;
+      }
 
-        // Try to get full formatted HTML once to detect header (e.g., x/total)
-        let fullBaseHtml: string | undefined;
-        try {
-          if (typeof origFormatter === 'function') {
-            fullBaseHtml = origFormatter(params) ?? '';
-          }
-        } catch (e) {
-          fullBaseHtml = undefined;
-        }
-
-        return fullBaseHtml || '';
-      };
-
-      // preserve original position if set, otherwise keep as-is (we don't force position here)
-      // return new options with only tooltip overridden
-      return {
-        ...opts,
-        tooltip,
-      };
+      return fullBaseHtml || '';
     };
 
     // preserve original position if set, otherwise keep as-is (we don't force position here)
@@ -451,20 +446,27 @@ export default function EchartsTimeseries({
     };
   }, [echartOptions, formData?.showDetailClick]);
 
-  // 事件委托：捕获 tooltip 中的“查看详情”链接点击
-  useEffect(() => {
-    if (!formData?.showDetailClick) return undefined;
+  // 使用 useRef 来防止重复触发
+  const detailClickInProgressRef = useRef(false);
 
-    // 全局监听 document 的点击事件，避免依赖 chartDom（可能为 undefined）
-    const handler = (e: MouseEvent) => {
+  // 使用 useCallback 稳定 handler 引用，确保 addEventListener 和 removeEventListener 操作的是同一个函数
+  const handleDetailClick = useCallback(
+    (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
       const link = target.closest('.echarts-detail-link') as HTMLElement | null;
       if (!link) return;
 
       e.preventDefault();
+      e.stopPropagation();
 
-      // 从 link 的 data 属性中提取轴值和系列标识
+      // 防抖：如果正在处理点击，忽略后续点击
+      if (detailClickInProgressRef.current) {
+        return;
+      }
+
+      detailClickInProgressRef.current = true;
+
       const rawName = link.getAttribute('data-name');
       const rawSeries = link.getAttribute('data-series');
       const rawValue = link.getAttribute('data-value');
@@ -473,30 +475,41 @@ export default function EchartsTimeseries({
       const seriesId = rawSeries ? decodeURIComponent(String(rawSeries)) : undefined;
       const dataValue = rawValue ? decodeURIComponent(String(rawValue)) : undefined;
 
-      // 优先使用 setDataMask 进行跨过滤/回调通知，传递 axisValue 和 seriesId
-      if (setDataMask) {
-        const filterStateValue = {
-          value: { axisValue, seriesId, dataValue },
-          label: seriesId ? `${seriesId} · ${axisValue ?? ''}` : String(axisValue ?? dataValue ?? ''),
-        };
-        setDataMask({
-          extraFormData: {},
-          filterState: filterStateValue,
-          ownState: filterStateValue,
-        });
-        console.log("查看详情发出通知:filterState", filterStateValue);
-        return;
-      }
+      const xField = xAxis.label;
 
-      // fallback: 调用 onContextMenu 如果可用
-      if (onContextMenu) {
-        onContextMenu((e as MouseEvent).clientX, (e as MouseEvent).clientY);
-      }
+      const filterStateValue = {
+        value: { axisValue, seriesId, dataValue },
+        label: seriesId ? `${seriesId} · ${axisValue ?? ''}` : String(axisValue ?? dataValue ?? ''),
+      };
+
+      const clickData: ChartClickEventData = {
+        chartId: 0,
+        value: axisValue,
+        timestamp: Date.now(),
+        chartType: 'z_bar_chart',
+        label: xField,
+        ...filterStateValue,
+      };
+
+      emitChartClickEvent(clickData);
+
+      // 重置防抖标志（100ms 后允许下次点击）
+      setTimeout(() => {
+        detailClickInProgressRef.current = false;
+      }, 100);
+    },
+    [xAxis.label],
+  );
+
+  // 事件委托：捕获 tooltip 中的"查看详情"链接点击
+  useEffect(() => {
+    if (!formData?.showDetailClick) return undefined;
+
+    document.addEventListener('click', handleDetailClick);
+    return () => {
+      document.removeEventListener('click', handleDetailClick);
     };
-
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, [formData?.showDetailClick, setDataMask, onContextMenu]);
+  }, [formData?.showDetailClick, handleDetailClick]);
 
   return (
     <>

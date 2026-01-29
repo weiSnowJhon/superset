@@ -202,8 +202,8 @@ export default function EchartsTimeseries({
           };
           
           // 发出通知
-          console.log("自定义修改发出通知:",dataMask)
-          setDataMask(dataMask);
+          // console.log("自定义修改发出通知:",dataMask)
+          // setDataMask(dataMask);
         }
       }, TIMER_DURATION);
     },

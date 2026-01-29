@@ -18,6 +18,7 @@
  */
 import { styled, useTheme } from '@superset-ui/core';
 import { CourseNumberVizProps } from './types';
+import { emitChartClickEvent, type ChartClickEventData } from 'src/chartEvents';
 
 function CourseNumberVis({
   width,
@@ -54,17 +55,21 @@ function CourseNumberVis({
   const metricValueSize = Math.floor(height * metricsFontSize);
 
   const handleCardClick = () => {
-    console.log('Course card clicked!', { callbackIdentifier, courseName });
+    const labelName = callbackIdentifier || courseName;
     
-    // Trigger cross-filtering if callbackIdentifier is provided and setDataMask exists
-    if (callbackIdentifier && setDataMask) {
-      setDataMask({
-        extraFormData: {},
-        filterState: {
-          value: callbackIdentifier,
-          label: callbackIdentifier || courseName,
-        },
-      });
+    // Use lightweight chart event system (no Redux, no refresh)
+    if (labelName && showHoverEffect) {
+      const clickData: ChartClickEventData = {
+        chartId: 0,
+        value: callbackIdentifier,
+        courseName,
+        timestamp: Date.now(),
+        chartType: 'z_course_card',
+        labelName,
+      };
+      
+      emitChartClickEvent(clickData);
+      return;
     }
   };
 
@@ -104,7 +109,6 @@ function CourseNumberVis({
                 lineHeight: 1.2,
                 textAlign: 'center',
                 width: '100%', // 确保文字居中相对于父容器
-                paddingTop: '30px', // 可选：给顶部留一点呼吸空间
               }}
             >
               {courseName}
@@ -248,7 +252,7 @@ function CourseNumberVis({
 const StyledCourseNumberVis = styled(CourseNumberVis)<{ showHoverEffect?: boolean }>`
   ${({ theme, showHoverEffect }) => `
     font-family: ${theme.fontFamily};
-    border: 1px solid #d9d9d9;
+    border:  ${showHoverEffect ? '1px solid #d9d9d9;' : 'none'};
     cursor: ${showHoverEffect ? 'pointer' : 'default'};
     transition: all 0.3s ease;
     box-sizing: border-box;
@@ -277,6 +281,7 @@ const StyledCourseNumberVis = styled(CourseNumberVis)<{ showHoverEffect?: boolea
 
     .course-name {
       color: #999;
+      padding-top: ${theme.sizeUnit * 4}px;
     }
 
     .unit {
