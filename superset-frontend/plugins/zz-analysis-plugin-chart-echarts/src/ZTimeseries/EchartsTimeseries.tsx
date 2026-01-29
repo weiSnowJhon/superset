@@ -485,7 +485,7 @@ export default function EchartsTimeseries({
         value: axisValue,
         timestamp: Date.now(),
         chartType: 'z_bar_chart',
-        label: xField,
+        label: xAxis.label,
         ...filterStateValue,
       };
 
