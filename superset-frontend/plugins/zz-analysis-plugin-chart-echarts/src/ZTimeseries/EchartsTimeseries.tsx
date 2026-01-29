@@ -475,8 +475,6 @@ export default function EchartsTimeseries({
       const seriesId = rawSeries ? decodeURIComponent(String(rawSeries)) : undefined;
       const dataValue = rawValue ? decodeURIComponent(String(rawValue)) : undefined;
 
-      const xField = xAxis.label;
-
       const filterStateValue = {
         value: { axisValue, seriesId, dataValue },
         label: seriesId ? `${seriesId} · ${axisValue ?? ''}` : String(axisValue ?? dataValue ?? ''),
